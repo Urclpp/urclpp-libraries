@@ -1,0 +1,163 @@
+BITS == 32
+OUTS 1
+OPS 3
+REG 3
+
+LLOD R2 SP 1
+LLOD R3 SP 2
+
+BRZ .sub_r3z R3
+PSH R3
+XOR R3 R3 0x80000000
+CAL .sub_add
+POP R3
+RET
+
+.sub_r3z
+MOV R1 R2
+RET
+
+.sub_real
+MOV R1 R2
+POP R2
+POP R3
+PSH R1
+PSH R3
+PSH R2
+CAL .sub_getBiasedExponent
+MOV R2 R3 //R2 = R3
+MOV R3 R1 //R3 = exponent of R2
+CAL .sub_getBiasedExponent
+SUB R1 R3 R1 //R1 = R2e - R3e
+POP R2
+POP R3
+PSH R2
+PSH R1
+CAL .sub_getMantissa
+MOV R2 R3 //R2 = R3
+MOV R3 R1 //R3 = R2m
+CAL .sub_getMantissa
+MOV R2 R1 //R2 = R3m
+POP R1
+DEC R1 R1
+BRN .sub_skpshft R1
+BSR R2 R2 R1
+PSH R0
+BOD .sub_rndup R2
+.sub_rndupret
+BSR R2 R2 1 
+POP R1
+ADD R2 R2 R1
+.sub_skpshft
+SUB R3 R3 R2
+POP R2
+CAL .sub_getBiasedExponent
+BRL .sub_normalizeloop R3 0x800000
+.sub_normalizeret
+AND R3 R3 0x7FFFFF
+BSL R1 R1 23
+ADD R3 R1 R3
+POP R1
+ADD R1 R1 R3
+POP R3
+POP R2
+RET
+
+.sub_rndup
+STR SP 1
+JMP .sub_rndupret
+
+.sub_normalizeloop
+LSH R3 R3
+DEC R1 R1
+BRZ .sub_normalizeret R1
+BRL .sub_normalizeloop R3 0x800000
+JMP .sub_normalizeret
+
+
+.sub_getBiasedExponent
+BSR R1 R2 23
+AND R1 R1 0xFF
+RET
+
+.sub_getMantissa
+PSH R3
+BSR R3 R2 23
+AND R1 R2 0x7FFFFF
+BRZ .sub_getMantissa_subnormal R3
+ADD R1 R1 0x800000
+.sub_getMantissa_subnormal
+POP R3
+RET
+
+
+// LCAL in library functions when :c
+.sub_add
+PSH R2
+PSH R3
+AND R2 R2 0x7FFFFFFF
+AND R3 R3 0x7FFFFFFF
+BRG .sub_add_reorder R3 R2
+LOD R3 SP
+LLOD R2 SP 1
+PSH R3
+PSH R2
+.sub_add_noReorder
+AND R2 R2 0x80000000
+AND R3 R3 0x80000000
+XOR R3 R2 R3
+BNZ .sub_real R3
+LOD R2 SP
+LLOD R3 SP 1
+CAL .sub_getBiasedExponent
+MOV R2 R3
+MOV R3 R1
+CAL .sub_getBiasedExponent
+SUB R1 R3 R1
+LOD R2 SP
+LLOD R3 SP 1
+PSH R1
+CAL .sub_getMantissa
+MOV R2 R3
+MOV R3 R1
+CAL .sub_getMantissa
+MOV R2 R1
+POP R1
+DEC R1 R1
+BRN .sub_add_skpshft R1
+BSR R2 R2 R1
+PSH R0
+BOD .sub_add_rndup R2
+.sub_add_rndupret
+BSR R2 R2 1
+POP R1
+ADD R2 R2 R1
+.sub_add_skpshft
+ADD R3 R3 R2
+LOD R2 SP
+BGE .sub_add_incExp R3 0x1000000
+.sub_add_incExp_Ret
+AND R3 R3 0x7FFFFF
+AND R1 R2 0xFF800000
+ADD R1 R1 R3
+POP R0
+POP R0
+POP R3
+POP R2
+RET
+
+.sub_add_rndup
+STR SP 1
+JMP .sub_add_rndupret
+
+.sub_add_incExp
+RSH R3 R3
+ADD R2 R2 0x00800000
+JMP .sub_add_incExp_Ret
+
+.sub_add_reorder
+LOD R2 SP
+LLOD R3 SP 1
+PSH R3
+PSH R2
+JMP .sub_add_noReorder
