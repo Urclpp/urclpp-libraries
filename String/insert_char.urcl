@@ -1,0 +1,76 @@
+BITS >= 8
+OUTS 0
+OPS 4
+REG 5
+
+LLOD R1 SP 2
+JMP .insert_char__saveStringStack
+
+.insert_char__saveStringStack__return
+LOD	R2 SP
+
+// Load dest
+ADD R2 R2 2
+LLOD R1 SP R2
+
+// Load index of char to be inserted
+ADD R2 R2 2
+LLOD R4 SP R2
+INC R4 R4
+
+// Temporarily store char to insert at 1st pos at dest
+INC R2 R2
+LLOD R3 SP R2
+STR R1 R3
+
+// Load size
+POP R2
+INC R2 R2
+
+// Loop counter / Address to store to
+IMM R3 1
+
+// Main loop
+.insert_char_Loop
+    // End loop if index is greater to size
+    BRG .insert_char_LoopEnd R3 R2
+    // If our index is the index to be inserted, add char
+    BRE .insert_char_LoopInsert R3 R4
+
+    .insert_char_LoopInsert__return
+    // Write chars to dest
+    POP R5
+    LSTR R1 R3 R5
+    INC R3 R3
+
+    JMP .insert_char_Loop
+
+.insert_char_LoopInsert
+    LOD R5 R1
+    LSTR R1 R3 R5
+    INC R3 R3
+    JMP .insert_char_LoopInsert__return
+
+.insert_char_LoopEnd
+// R2 already holds new string size since it was incremented earlier
+STR R1 R2
+RET
+
+// Saves string to stack in reverse order
+// Inputs -
+// R1: const string*
+.insert_char__saveStringStack
+    LOD R2 R1
+
+    MOV R4 R2
+    .insert_char__saveStringStackLoop
+    BRZ .insert_char__saveStringStackEnd R2
+    LOD R3 R2
+    PSH R3
+    DEC R2 R2
+    JMP .insert_char__saveStringStackLoop
+
+    .insert_char__saveStringStackEnd
+    // Push lenght at the end so it is POP-ed first
+    PSH R4
+    JMP .insert_char__saveStringStack__return

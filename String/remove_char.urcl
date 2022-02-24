@@ -3,58 +3,68 @@ OUTS 0
 OPS 3
 REG 5
 
-LLOD R1 SP 2            // Load source to save to stack
-JMP .saveStringStack
+// Load source to save to stack
+LLOD R1 SP 2
+JMP .remove_char__saveStringStack
 
-.saveStringStack__return
+.remove_char__saveStringStack__return
 LOD R2 SP
-ADD R2 R2 2
-LLOD R1 SP R2           // Load destination to use in loop
 
+// Load dest
 ADD R2 R2 2
-LLOD R4 SP R2           // Load index of character to be removed
+LLOD R1 SP R2
+
+// Load index of char to be removed
+ADD R2 R2 2
+LLOD R4 SP R2
 INC R4 R4
 
-POP R2                  // Load size
+// Load size
+POP R2
 DEC R2 R2
 
-IMM R3 1                // Loop counter
+ // Loop counter / Address to store to
+IMM R3 1
 
 // Main loop
 .remove_char_Loop
-BRG .remove_char_LoopEnd R3 R2      // End loop if index is greater to size
-BRE .remove_char_LoopSkip R3 R4     // If our index is the index to be removed, skip this character
+    // End loop if index is greater to size
+    BRG .remove_char_LoopEnd R3 R2
+    // If our index is the index to be removed, skip this char
+    BRE .remove_char_LoopSkip R3 R4
 
-.remove_char_LoopSkip__return
-// Write characters to destination
-POP R5
-LSTR R1 R3 R5
-INC R3 R3
+    .remove_char_LoopSkip__return
+    // Write chars to dest
+    POP R5
+    LSTR R1 R3 R5
+    INC R3 R3
 
-JMP .remove_char_Loop
+    JMP .remove_char_Loop
 
 .remove_char_LoopSkip
-POP	R0
-JMP .remove_char_LoopSkip__return
+    POP	R0
+    JMP .remove_char_LoopSkip__return
 
 .remove_char_LoopEnd
-STR R1 R2                           // R2 already holds new string size since it was decremented earlier
+// R2 already holds new string size since it was decremented earlier
+STR R1 R2
 RET
+
 
 // Saves string to stack in reverse order
 // Inputs -
 // R1: const string*
-.saveStringStack
+.remove_char__saveStringStack
     LOD R2 R1
-
-    MOV R4 R2
-    .saveStringStackLoop
-    BRZ .saveStringStackEnd R2
+    .remove_char__saveStringStackLoop
+    BRZ .remove_char__saveStringStackEnd R2
     LOD R3 R2
     PSH R3
     DEC R2 R2
-    JMP .saveStringStackLoop
+    JMP .remove_char__saveStringStackLoop
 
-    .saveStringStackEnd
-    PSH R4      // Push lenght at the end so it is POP-ed first
-    JMP .saveStringStack__return
+.remove_char__saveStringStackEnd
+    // Push lenght at the end so it is POP-ed first
+    LOD R2 R1
+    PSH R2
+    JMP .remove_char__saveStringStack__return
