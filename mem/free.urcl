@@ -1,0 +1,103 @@
+BITS == 8
+OUTS 0
+OPS 1
+REG 5
+
+LLOD R1 SP 1 // prev block
+
+LOD R2 R1
+ADD R2 R1 R2
+INC R2 R2    // next block
+
+LOD R3 M1 // index
+ADD R4 R3 2
+STR M1 R4
+PSH R3
+LOD R4 M0
+BRL .while1 R3 R4
+IMM R1 0 // return Null or call defrag
+RET
+
+.while1
+BRL .end_while1 R3 2
+LOD R4 R3
+INC R5 R3
+LOD R5 R5
+ADD R4 R4 R5
+BNE .end_if1 R4 R1
+//self.ram[index + 1] += self.ram[reg.value] + 1
+INC R3 R3
+LOD R5 R3
+LOD R4 R1
+ADD R5 R5 R4
+INC R5 R5
+STR R3 R5
+DEC R3 R3
+
+LOD R4 M1
+SUB R4 R4 2
+STR M1 R4
+
+INC R5 R3
+IMM R4 -1 // freed
+JMP .end_while1
+.end_if1
+SUB R3 R3 2
+JMP .while1
+.end_while1
+
+POP R3
+PSH R4
+
+.while2
+BRL .end_while2 R3 2
+LOD R4 R3
+BNE .end_if2 R4 R2
+POP R4
+BRZ .else3 R4
+//self.ram[prev_index] += self.ram[index + 1] + 1
+LOD R2 R5
+INC R3 R3
+LOD R4 R3
+ADD R4 R4 R2
+INC R4 R4
+STR R2 R4
+//self.ram[index + 1] = self.ram[self.ram[1] + 1]
+LOD R2 M1
+INC R5 R2
+LOD R4 R5
+STR R3 R4
+DEC R3 R3
+//self.ram[index] = self.ram[self.ram[1]]
+LOD R5 R2
+STR R3 R5
+JMP .end_if3
+.else3
+//self.ram[index] = reg.value
+STR R3 R1
+//self.ram[index + 1] += self.ram[reg.value] + 1
+INC R3 R3
+LOD R2 R3
+LOD R4 R1
+ADD R2 R4 R2
+INC R2 R2
+STR R3 R2
+.end_if3
+LOD R4 M1
+SUB R4 R4 2
+STR M1 R4
+PSH -1
+.end_if2
+SUB R3 R3 2
+JMP .while2
+.end_while2
+POP R4
+BNZ .end R4
+LOD R4 M1
+STR R4 R1
+INC R4 R4
+LOD R5 R1
+INC R5 R5
+STR R4 R5
+.end
+RET

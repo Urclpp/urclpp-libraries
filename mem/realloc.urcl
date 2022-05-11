@@ -1,0 +1,30 @@
+BITS == 8
+OUTS 1
+OPS 2
+REG 4
+IMPORT mem.malloc mem.free
+
+LLOD R1 SP 1
+LLOD R2 SP 2
+
+LOD R4 R2
+LCAL mem.free(R1)
+MOV R3 R1
+LCAL mem.malloc(R2) // output will be on R1 by default
+BRE .end R1 R3
+IMM R2 1
+.loop1
+ADD R3 R1 R2
+LOD R3 R3
+PSH R3
+INC R2 R2
+BLE .loop1 R2 R4
+.loop2
+POP R2
+ADD R3 R1 R4
+STR R3 R2
+DEC R4 R4
+BRG .loop2 R4 R0
+.end
+POP R0
+RET
