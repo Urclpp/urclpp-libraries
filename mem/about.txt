@@ -1,0 +1,23 @@
+mem library made by Kuggo
+
+This library is meant to be used to manage your memory automatically.
+There is no specific size for a block of memory. Its a variable size block allocator.
+Every allocated block of n bytes in memory takes n+1 bytes as its prefixed with its length. so index 0 of the allocated block contains the value n. This is meant to be used along with other structs/objects created in urcl. those should take advantage of this feature. (choosing legth prefixed strings instead of null terminated for example).
+It requires the init function to be executed before any of the other ones.
+The setup will create usable memory that is divided into 2 parts: the heap (bigger part where the blocks will be allocated), and control (smaller part that will be used to manage all of that heap). 
+The first address is the size of the control that is used to control the heap. Control goes from address 0 to N, (N being the amount of memory dedicated to control the heap).
+The second address contains the address of the last element on the linked list that all free (unused) blocks are part of. that linked list takes up all the memory from address 2 to N ,(N being the amount of memory dedicated to control the heap). That linked list starts with 1 element that is the emtpy heap.
+The third address is the first position of the linked list (each element of the linked list contains 2 values). address 2 and 3 are the first element of the linked list. the first address of the pair contains the location at which the free block is. The second contains the size of the free block.
+The forth address starts being the total length of the heap, and contains the length of the first free block.
+The heap goes from N to M (N being the amount of memory dedicated to control the heap and M being the total amount of memory given to the allocator). After M memroy will not be used by the allocator. it can be used by the stack or even freely by the user.
+At the setup the user should decide how much memory the heap should have and how big the linked list can get before the program crashing (there is no way to defragment atm). The amount of free blocks the list can get is the (N-1) / 2 (N being the size given to the linked list at the start).
+For more information ask Kuggo on URCL's discord server.
+
+Functions (all inputs passed on the stack and output will be on R1 just like urclpp's calling convetion describes):
+falloc  - you should not use falloc as your command to allocate memory. It only works great in certain conditions despite being the fastest allocator (bump alloc). only you it when you need to allocate temporary blocks that will be removed afterwards. if anything else happens in between (reallocated or freed), you will cause faster fragmentation. This will eventually lead to your program crashing if not used correctly.
+free    - it frees an existing block of allocated memory. Do not pass an unallocated block or it may overwrite other undesired locations and malfunction. If the block was next to another freed block the system will merge them into a single freed block again. This Function can break if there is no space to pu the new free block on the linked list (that block is forever lost), until memory reset.
+init    - it initialises the system to be able to work. if this is called later the memory will be reset (linked list will be with 1 element only and heap will be blank).
+malloc  - it returns the address of a new block of allocated memory (first fit algorithm). if the block found is bigger than what was needed it will be split into 2: the allocated block, and the remaining free block.
+realloc - it returns the new address of a new block with the desired size. It also copies the contents of the last block into the new block. blocks that now have smaller size will be truncated to fit on the new block when copied. the old block is automatically freed.
+
+last update: 11/05/2022
