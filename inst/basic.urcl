@@ -1,0 +1,95 @@
+//Redefined CORE instructions
+
+INST ADD WB ANY ANY
+// Add Op2 to Op3 then put result into Op1
+// WHERE b <> c
+
+// Unsigned right shift Op2 once then put result into Op1
+INST RSH WB ANY
+
+// Copy RAM value pointed to by Op2 into Op1
+INST LOD WB MEM
+// READS MEM
+
+// Copy Op2 into RAM value pointed to by Op1
+INST STR MEM ANY
+// WRITES MEM
+
+// Branch to address specified by Op1 if Op2 is more than or equal to Op3
+INST BGE MEM ANY ANY
+// WRITES PC
+
+// Bitwise NOR Op2 and Op3 then put result into Op1
+INST NOR WB ANY ANY
+// WHERE b <> c
+
+// Load immediate
+INST IMM WB IMM
+
+// BASIC instructions only
+
+INST SUB WB ANY ANY
+
+INST JMP MEM
+
+INST MOV WB ANY
+
+INST NOP
+
+INST LSH WB ANY
+
+INST INC WB ANY
+
+INST DEC WB ANY
+
+INST NEG WB ANY
+
+INST AND WB ANY ANY
+
+INST OR WB ANY ANY
+
+INST NOT WB ANY
+
+INST XOR WB ANY ANY
+
+INST XNOR WB ANY ANY
+
+INST NAND WB ANY ANY
+
+INST BRE LOC ANY ANY
+
+INST BNE LOC ANY ANY
+
+INST BRL LOC ANY ANY
+
+INST BRG LOC ANY ANY
+
+INST BLE LOC ANY ANY
+
+INST BRZ LOC ANY ANY
+
+INST BNZ LOC ANY ANY
+
+INST BRN LOC ANY ANY
+
+INST BRP LOC ANY ANY
+
+INST BEV LOC ANY ANY
+
+INST BOD LOC ANY ANY
+
+INST PSH ANY
+
+INST POP WB
+
+INST CAL LOC
+
+INST RET
+
+INST HLT
+
+INST CPY MEM MEM
+
+INST BRC LOC ANY ANY
+
+INST BNC LOC ANY ANY
