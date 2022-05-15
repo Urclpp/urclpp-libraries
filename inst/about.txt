@@ -1,0 +1,12 @@
+inst library by Kuggo.
+This lib was made to be imported by default and be used to define instructions and their respective operand types to be checked.
+How to define an Instruction (outside of this library):
+An instruction definition takes the following format: INST keyword, followed by the opcode of the instruction we want to define, then we put the types of the operands (if it has operands).
+The library supoports matching types with the following list:
+WB: Write back to register (register to be written)
+LOC: Instruction location (address to branch to)
+MEM: Heap location (address to load/store to)
+REG: Register to be read
+IO: Port number/name to be used
+IMM: Any type that can be interpreted as imm value (label, char, memory location, jump address, imm literals)
+ANY: Any type at all (except Port number/name)
